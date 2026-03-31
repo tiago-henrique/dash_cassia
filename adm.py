@@ -3,9 +3,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 import streamlit as st
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from io import BytesIO
 
 st.set_page_config(layout="wide")
 database = pd.read_excel(st.secrets['DATABASE'])
+#database  = pd.read_excel("database/dados_cassia.xlsx")
 
 #Excluir as duplicatas e definir dados
 db_clean = database[database['Result_episdo'] == "ABERTURA"]
@@ -110,14 +115,12 @@ fig_sitios = px.pie(
 fig_sitios.update_traces(textposition='outside', textinfo='percent+label')
 fig_sitios.update_layout(showlegend=True)
 
-
 col1, col2 = st.columns([1,1])
 col3, col4 = st.columns([1,1])
 col5, col6 = st.columns([1,1])
 col7, col8 = st.columns([1,1])
 col9, col10 = st.columns([1,1])
 
-#col1, col2, col3 = st.columns([1, 1, 1.5])
 with col1:
     st.plotly_chart(fig_sexo, use_container_width=True, theme='streamlit')
 with col2:
@@ -125,8 +128,6 @@ with col2:
 with col3:
     st.plotly_chart(fig_sitios, use_container_width=True, theme='streamlit')
 
-
-#col4, col5, col6 = st.columns([1, 1.5, 1])
 #Definir etapas previstas no protocolo
 origem_infeccao = db_clean_filtrado['Comunitaria X hospitalar'].value_counts()
 atm_1h = db_clean_filtrado['ATB 1h (Bundle)'].value_counts()
@@ -147,17 +148,17 @@ fig_origem_infeccao.update_layout(showlegend=True)
 with col4:
     st.plotly_chart(fig_origem_infeccao, use_container_width=True, theme='streamlit')
 
-fig_atm = px.pie(
-    atm_1h,
-    values=atm_1h.values,
-    names=atm_1h.index,
-    title='ATB em 1 hora',
-    hole=0.5,
-)
-fig_atm.update_traces(textposition='outside', textinfo='percent+label')
-fig_atm.update_layout(showlegend=True)
-with col5:
-    st.plotly_chart(fig_atm, use_container_width=True, theme='streamlit')
+# fig_atm = px.pie(
+#     atm_1h,
+#     values=atm_1h.values,
+#     names=atm_1h.index,
+#     title='ATB em 1 hora',
+#     hole=0.5,
+# )
+# fig_atm.update_traces(textposition='outside', textinfo='percent+label')
+# fig_atm.update_layout(showlegend=True)
+# with col5:
+#     st.plotly_chart(fig_atm, use_container_width=True, theme='streamlit')
 
 fig_lactato = px.pie(
     lactato_bundle,
@@ -168,10 +169,9 @@ fig_lactato = px.pie(
 )
 fig_lactato.update_traces(textposition='outside', textinfo='percent+label')
 fig_lactato.update_layout(showlegend=True)
-with col6:
+with col5:
     st.plotly_chart(fig_lactato, use_container_width=True, theme='streamlit')
 
-#col7, col8, col9 = st.columns([1, 1.5, 1])
 fig_exp_vol = px.pie(
     expansao_volemia,
     values=expansao_volemia.values,
@@ -181,7 +181,7 @@ fig_exp_vol = px.pie(
 )
 fig_exp_vol.update_traces(textposition='outside', textinfo='percent+label')
 fig_exp_vol.update_layout(showlegend=True)
-with col7:
+with col6:
     st.plotly_chart(fig_exp_vol, use_container_width=True, theme='streamlit')
 
 fig_hmc = px.pie(
@@ -193,20 +193,24 @@ fig_hmc = px.pie(
 )
 fig_hmc.update_traces(textposition='outside', textinfo='percent+label')
 fig_hmc.update_layout(showlegend=True)
-with col8:
+with col7:
     st.plotly_chart(fig_hmc, use_container_width=True, theme='streamlit')
 
-fig_bundle = px.pie(
-    bundle_com,
-    values=bundle_com.values,
-    names=bundle_com.index,
-    title='Bundle completo',
-    hole=0.5,
-)
-fig_bundle.update_traces(textposition='outside', textinfo='percent+label')
-fig_bundle.update_layout(showlegend=True)
-with col9:
-    st.plotly_chart(fig_bundle, use_container_width=True, theme='streamlit')
+# fig_bundle = px.pie(
+#     bundle_com,
+#     values=bundle_com.values,
+#     names=bundle_com.index,
+#     title='Bundle completo',
+#     hole=0.5,
+# )
+# fig_bundle.update_traces(textposition='outside', textinfo='percent+label')
+# fig_bundle.update_layout(showlegend=True)
+#with col9:
+    #st.plotly_chart(fig_bundle, use_container_width=True, theme='streamlit')
+st.header("Bundle Completo")
+st.bar_chart(bundle_com)
+st.header("ATB em 1 Hora")
+st.bar_chart(atm_1h)
 
 media_idade = db_clean_filtrado['idade_anos'].mean()
 media_idade = round(media_idade,1)
@@ -290,7 +294,122 @@ bundle_completo = db_clean_filtrado['Bundle Completo'].value_counts()
 st.header("Bundle Completo")
 st.write(bundle_completo)
 
-teste = pd.DataFrame({
-    'Métrica': ['Média Idade', 'Bundle Completo', 'Convênio'],
-    'Valor': [str(media_idade), str(bundle_completo), str(convenio)]
-})
+def convert_df(df):
+    return df.to_csv(index=False).encode('utf-8')
+
+
+#Excluir dados sensíveis do banco de dados
+colunas_deletar = ['Nro. Atend.', 'Prontuário','Nome do Paciente']
+db_clean_filtrado = db_clean_filtrado.drop(columns=colunas_deletar)
+
+csv = convert_df(db_clean_filtrado)
+# with st.sidebar:
+#     st.title("Baixar dados")
+#     st.download_button(
+#         label="Baixar CSV",
+#         data=csv,
+#         file_name="dados.csv",
+#         mime="text/csv"
+#     )
+
+# Função para gerar o PDF
+def gerar_pdf():
+    buffer = BytesIO()
+    
+    doc = SimpleDocTemplate(buffer)
+    styles = getSampleStyleSheet()
+    
+    elementos = []
+    
+    # Conteúdo do PDF
+    titulo_style = ParagraphStyle(
+        name='Título',
+        fontSize=20,
+        leading=22,
+        alignment=1,
+        spaceAfter=20,
+        textColor=colors.darkblue
+    )
+
+    titulo = "Relatório de Indicadores"
+    elementos.append(Paragraph(titulo, titulo_style))
+    
+    masc = sexo.get('MASCULINO', 0)
+    fem = sexo.get('FEMININO', 1)
+    hb = unidade_hospitalar.get('HB')
+    hcm = unidade_hospitalar.get('HCM')
+    sd = unidade_hospitalar.get('SEM DADO')
+    unico = sitios_acometidos.get('ÚNICO')
+    multiplo = sitios_acometidos.get('MÚLTIPLO')
+    sd_sitio = sitios_acometidos.get('SEM DADO')
+
+    elementos.append(Paragraph(str(f'Total de atendimentos: {total_atendidos}'), styles['Normal']))
+    elementos.append(Paragraph(str(f'Média de idade: {media_idade}'), styles['Normal']))
+    elementos.append(Paragraph('Quem são nossos pacientes', styles['Heading2']))
+    elementos.append(Paragraph('Sexo', styles['Heading4']))
+    elementos.append(Paragraph(str(f'Masculino: {masc}'), styles['Normal']))
+    elementos.append(Paragraph(str(f'Feminino: {fem}'), styles['Normal']))
+    elementos.append(Paragraph('Unidade Hospitalar', styles['Heading4']))
+    elementos.append(Paragraph(str(f'Hospital de base: {hb}'), styles['Normal']))
+    elementos.append(Paragraph(str(f'HCM: {hcm}'), styles['Normal']))
+    elementos.append(Paragraph(str(f'Sem Dado: {sd}'), styles['Normal']))
+    elementos.append(Paragraph('Sítios Acomentidos', styles['Heading4']))
+    elementos.append(Paragraph(str(f'Único: {unico}'), styles['Normal']))
+    elementos.append(Paragraph(str(f'Múltiplos: {multiplo}'), styles['Normal']))
+    elementos.append(Paragraph(str(f'Sem Dado: {sd_sitio}'), styles['Normal']))
+    elementos.append(Spacer(1,12))
+    
+    cabecalho = [[Paragraph("Especialidade", styles['Normal']), Paragraph("Quantidade", styles['Normal'])]]  
+
+    # Linhas da tabela
+    for idx, item in atendimento_especialidade.items():
+        cabecalho.append([
+            Paragraph(str(idx), styles['Normal']),
+            Paragraph(str(item), styles['Normal'])
+        ])
+
+    tabela = Table(cabecalho, colWidths=[300, 100])
+
+    tabela.setStyle(TableStyle([
+        ('GRID', (0,0), (-1,-1), 0.8, colors.black),
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('ALIGN', (1,1), (-1, -1), 'CENTER'),
+    ]))
+
+    # Linhas alternadas
+    for i in range(1, len(cabecalho)):
+        if i % 2 == 0:
+            tabela.setStyle(TableStyle([
+                ('BACKGROUND', (0,i), (-1,i), colors.lightgrey)
+            ]))
+
+    elementos.append(tabela)
+    doc.build(elementos)
+    
+    buffer.seek(0)
+    return buffer
+
+# Interface Streamlit
+pdf = None
+with st.sidebar:
+    st.title("Baixar dados")
+
+    if st.button("Gerar PDF"):
+        pdf = gerar_pdf()
+    
+    if pdf is not None:
+        st.download_button(
+            label="Baixar PDF",
+            data=pdf,
+            file_name="relatorio.pdf",
+            mime="application/pdf"
+        )
+
+    st.download_button(
+        label="Baixar CSV",
+        data=csv,
+        file_name="dados.csv",
+        mime="text/csv"
+    )
