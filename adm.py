@@ -6,7 +6,6 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 database = pd.read_excel(st.secrets['DATABASE'])
-#database  = pd.read_excel("database/dados_cassia.xlsx")
 
 #Excluir as duplicatas e definir dados
 db_clean = database[database['Result_episdo'] == "ABERTURA"]
@@ -295,18 +294,3 @@ teste = pd.DataFrame({
     'Métrica': ['Média Idade', 'Bundle Completo', 'Convênio'],
     'Valor': [str(media_idade), str(bundle_completo), str(convenio)]
 })
-
-def convert_df(df):
-    return df.to_csv(index=False).encode('utf-8')
-
-#csv = convert_df(db_clean_filtrado)
-csv = convert_df(teste)
-
-with st.sidebar:
-    st.download_button(
-        label="Baixar CSV",
-        data=csv,
-        file_name="dados.csv",
-        mime="text/csv"
-    )
-
