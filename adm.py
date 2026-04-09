@@ -77,7 +77,7 @@ st.markdown("""
             width: 15vw;
             margin-bottom: 5px;
             margin-left: 5px;
-            width: 20%;
+            width: 100%;
         }
         .atendimentos h4{
             font-size: 20px;
