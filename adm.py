@@ -237,4 +237,4 @@ with col8:
     st.plotly_chart(fig_expansao, use_container_width=True)
 st.markdown('''
     <footer>Desenvolvido por Cassia Estofolete e Tiago Henrique</footer>
-''')
+''', unsafe_alow_html=True)
