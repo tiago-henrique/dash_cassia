@@ -65,7 +65,7 @@ st.markdown("""
         .header{
             display: grid;
             grid-template-columns: 1fr 1fr;
-            width: 100%;
+            width: 40vw;
         }
         .atendimentos {
             border: 1px solid #c0c0c0;
