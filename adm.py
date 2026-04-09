@@ -63,8 +63,8 @@ total_atendidos = db_clean_filtrado['Prontuário'].count()
 st.markdown("""
     <style>
         .header{
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             width: 100%;
         }
         .atendimentos {
