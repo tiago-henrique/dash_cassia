@@ -235,4 +235,4 @@ with col8:
         title='Expansão Volêmica'
     )
     st.plotly_chart(fig_expansao, use_container_width=True)
-st.markdown("<footer>Desenvolvido por Cassia Estofolete e Tiago Henrique</footer>", unsafe_allow_html=True)
+st.markdown("<footer>Desenvolvido por Profa. Dra. Cassia Estofolete e Dr. Tiago Henrique</footer>", unsafe_allow_html=True)
