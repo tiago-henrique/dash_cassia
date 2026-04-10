@@ -9,8 +9,8 @@ from reportlab.lib import colors
 from io import BytesIO
 
 st.set_page_config(layout="wide")
-#database = pd.read_excel(st.secrets['DATABASE'])
-database = pd.read_excel("database/dados_cassia_n.xlsx")
+database = pd.read_excel(st.secrets['DATABASE'])
+
 st.title("Indicadores Sentinela -  SEPSE")
 #Excluir as duplicatas e definir dados
 db_clean = database[database['Result_episdo'] == "Primeira amostra"]
