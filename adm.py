@@ -10,8 +10,8 @@ from io import BytesIO
 
 st.set_page_config(layout="wide")
 database = pd.read_excel(st.secrets['DATABASE'])
-
 st.title("Indicadores Sentinela -  SEPSE")
+
 #Excluir as duplicatas e definir dados
 db_clean = database[database['Result_episdo'] == "Primeira amostra"]
 db_clean = db_clean[db_clean['Susp. SEPSE?'] == "SIM"]
