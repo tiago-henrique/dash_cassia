@@ -68,10 +68,11 @@ st.markdown("""
             width: 100%;
         }
         .atendimentos {
+            background: #336799;
             border: 1px solid #c0c0c0;
             border-radius: 5px;
             box-shadow: 0 4px 8px 0 #c0c0c0;
-            color: #004170;
+            color: #FFF;
             text-align: left;
             padding: 0.7rem;
             width: 15vw;
