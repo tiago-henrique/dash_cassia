@@ -14,7 +14,7 @@ try:
 except Exception as e:
     st.error(f"Erro ao carregar o banco de dados: {e}")
     st.stop()
-#database = pd.read_excel("database/dados_cassia_n.xlsx")
+
 st.title("Indicadores Sentinela -  SEPSE")
 #Excluir as duplicatas e definir dados
 db_clean = database[database['Result_episdo'] == "Primeira amostra"]
