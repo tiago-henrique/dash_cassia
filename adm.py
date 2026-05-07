@@ -9,13 +9,15 @@ from reportlab.lib import colors
 from io import BytesIO
 
 st.set_page_config(layout="wide")
-try:
-    database = pd.read_excel(st.secrets['DATABASE'])
-except Exception as e:
-    st.error(f"Erro ao carregar o banco de dados: {e}")
-    st.stop()
+#try:
+#    database = pd.read_excel(st.secrets['DATABASE'])
+#except Exception as e:
+#    st.error(f"Erro ao carregar o banco de dados: {e}")
+#    st.stop()
 
+database = pd.read_excel("database/dados_cassia_n.xlsx")
 st.title("Indicadores Sentinela -  SEPSE")
+
 #Excluir as duplicatas e definir dados
 db_clean = database[database['Result_episdo'] == "Primeira amostra"]
 db_clean = db_clean[db_clean['Susp. SEPSE?'] == "SIM"]
@@ -30,6 +32,7 @@ db_clean['ano_registro'] = db_clean['data_registro'].dt.year
 db_clean['dia_semana'] = db_clean['data_registro'].dt.strftime("%A")
 db_clean['mes_ano'] = db_clean['data_registro'].dt.strftime('%m-%Y')
 db_clean['idade_anos'] = db_clean['Idade'].str.extract(r'(\d+)\s*Ano').fillna(0).astype(int)
+
 
 mes_ano_opcoes = ['Todos os meses'] + list (db_clean['mes_ano'].sort_values().dropna().unique())
 bundle_opcoes = ['', 'CONFORME']
@@ -60,9 +63,6 @@ if selecao_especialidade != 'Todas':
     filtros.append(db_clean_filtrado['Especialidade'] == selecao_especialidade)
 if filtros:
     db_clean_filtrado = db_clean_filtrado[np.logical_and.reduce(filtros)]
-
-#Contar atendimentos após aplicação dos filtros
-total_atendidos = db_clean_filtrado['Prontuário'].count()
 
 st.markdown("""
     <style>
@@ -99,6 +99,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+#Contar atendimentos após aplicação dos filtros
+total_atendidos = db_clean_filtrado['Prontuário'].count()
 
 #Obter a média de idade dos pacientes atendidos
 media_idade = db_clean_filtrado['idade_anos'].mean()
@@ -106,6 +108,22 @@ media_idade = round(media_idade,1)
 st.markdown(f'<div class="header"><div class="atendimentos"><h4>Total de atendimentos</h4><p>{total_atendidos}</p></div><div class="atendimentos"><h4>Média de Idade</h4> <p>{media_idade}</p></div></div>',unsafe_allow_html=True)
 #Imprimir tabela com os dados
 st.write(db_clean_filtrado)
+
+#Novo gráfico
+data_ng = db_clean_filtrado[['mes_ano','Bundle Completo']]
+data_ng_limpo = data_ng[data_ng['Bundle Completo'] == 'CONFORME']
+bundle_mes = data_ng_limpo['mes_ano'].value_counts().reset_index()
+bundle_mes.columns = ['Mês', 'Quantidade']
+bundle_mes = bundle_mes.sort_values('Mês')
+fig_bundle_mes = px.bar(
+    bundle_mes,
+    x='Mês',
+    y='Quantidade',
+    text='Quantidade',
+    title='Bundle Completo por Mês',
+)
+fig_bundle_mes.update_traces(textposition="outside", marker_color="#336799")
+st.plotly_chart(fig_bundle_mes)
 
 #Gráfico de Bundle completo e Bundle completo %
 col1, col2 = st.columns([1,1], border=True)
@@ -264,3 +282,23 @@ with col8:
     fig_expansao.update_layout(xaxis_title='Status', yaxis_title='Total')
 
     st.plotly_chart(fig_expansao, use_container_width=True)
+
+
+#Gráfico agrupado
+grafico_agrupado = (
+    db_clean_filtrado
+    .groupby('Especialidade')[['Bundle Completo', 'ATB 1h (Bundle)', 'Lactato 30 min (Bundle)', 'Expansão Volêmica (Bundle)']]
+    .apply(lambda x: (x == 'CONFORME').sum())
+    .reset_index()
+)
+
+fig = px.bar(
+    grafico_agrupado,
+    x='Especialidade',
+    y=['Bundle Completo', 'ATB 1h (Bundle)', 'Lactato 30 min (Bundle)', 'Expansão Volêmica (Bundle)'],
+    barmode='group',
+    title='Procedimentos por Especialidade',
+    color_discrete_sequence=['#003966', '#336799', '#93bff8', '#0097fa']
+)
+
+st.plotly_chart(fig, use_container_width=True)
