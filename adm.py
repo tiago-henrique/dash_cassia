@@ -9,13 +9,11 @@ from reportlab.lib import colors
 from io import BytesIO
 
 st.set_page_config(layout="wide")
-#try:
-#    database = pd.read_excel(st.secrets['DATABASE'])
-#except Exception as e:
-#    st.error(f"Erro ao carregar o banco de dados: {e}")
-#    st.stop()
-
-database = pd.read_excel("database/dados_cassia_n.xlsx")
+try:
+    database = pd.read_excel(st.secrets['DATABASE'])
+except Exception as e:
+    st.error(f"Erro ao carregar o banco de dados: {e}")
+    st.stop()
 st.title("Indicadores Sentinela -  SEPSE")
 
 #Excluir as duplicatas e definir dados
